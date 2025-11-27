@@ -28,11 +28,11 @@ if camera_photo:
   st.image(camera, caption="写真", use_column_width=True)
 
 #テスト
-
+"""
 st.import(cv2)
 img = cv2.imread("eiga.jpg")
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 plt.imshow(img)
 plt.show()
-
+"""
 
