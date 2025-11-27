@@ -8,6 +8,7 @@ st.write(name)
 
 st.checkbox("同意します")
 address = st.selectbox("次の中から現住所を教えてください",["大阪府","京都府","滋賀県"])
+st.write(address)
 
 camera_photo = st.camera.input("写真を撮影します")
 if camera_photo:
