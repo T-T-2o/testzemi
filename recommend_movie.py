@@ -1,24 +1,19 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-
 # ファイルの読み込み
 url = "https://github.com/aimathstats/dataviz1/raw/refs/heads/main/data/movie_rate.xlsx"
 real2 = pd.read_excel(url)
-
 # 初期設定
 M = 4   # 因子数
 k = 0.5
 lr = 0.001
 E = 20000
-
 # 画面表示
 st.title("映画推薦システム")
 st.write("10段階で見たことある映画を評価してください")
-
 movie_list = list(real2.columns)
 user_input = {}
-
 for movie in movie_list:
     rating = st.slider(f"{movie}", 0, 10, 0)
     user_input[movie] = np.nan if rating == 0 else rating
@@ -46,7 +41,7 @@ if st.button("推薦を表示"):
     user_pred = pd.Series(pred_matrix[-1], index=real2_with_user.columns)
 
     # すでに評価した映画を除外
-    rated = ~user_series.isna() # 評価済みをブールで取得（~はブールの否定演算子で、T/Fを反転）
+    rated = ~user_series.isna() # 評価済みをブールで取得（~はブールの否定演算子で、T/Fを反転
     recs = user_pred[~rated].sort_values(ascending=False).head(3) # 未評価映画のスコアの高い順に並べ替えて、上位３つ取得して格納
 
     st.subheader("あなたに推薦の映画")
