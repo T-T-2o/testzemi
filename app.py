@@ -1,5 +1,5 @@
 import streamlit as st
-
+"""
 st.title("こんにちは、吉村ゼミ")
 
 name = st.text_input("名前を入力してください")
@@ -26,6 +26,47 @@ st.map(list)
 camera_photo = st.camera_input("写真を撮影します")
 if camera_photo:
   st.image(camera, caption="写真", use_column_width=True)
+"""
+import random
+
+# 服の候補リスト
+tops = [
+    "白Tシャツ", "黒Tシャツ", "シャツ", "パーカー", "ニット", "ジャケット"
+]
+
+bottoms = [
+    "デニムパンツ", "黒スラックス", "チノパン", "ショートパンツ"
+]
+
+outerwear = [
+    "なし", "カーディガン", "コート", "ダウンジャケット"
+]
+
+shoes = [
+    "スニーカー", "革靴", "ローファー", "ブーツ", "サンダル"
+]
+
+accessories = [
+    "なし", "腕時計", "ネックレス", "キャップ", "バックパック"
+]
+
+def generate_outfit():
+    outfit = {
+        "トップス": random.choice(tops),
+        "ボトムス": random.choice(bottoms),
+        "アウター": random.choice(outerwear),
+        "靴": random.choice(shoes),
+        "アクセサリー": random.choice(accessories)
+    }
+    return outfit
+
+# 実行
+if __name__ == "__main__":
+    outfit = generate_outfit()
+    print("🎽 今日のランダムコーデ 🎽")
+    for key, value in outfit.items():
+        print(f"{key}：{value}")
+
 
 #テスト
 """
