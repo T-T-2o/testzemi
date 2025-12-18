@@ -3,12 +3,12 @@ import random
 from PIL import Image, ImageDraw
 
 # =========================
-# 1. Genre definition
+# 1. Genres
 # =========================
 GENRES = ["Casual", "Street", "Mode", "Minimal", "Formal", "Outdoor"]
 
 # =========================
-# 2. Genre similarity (content-based)
+# 2. Similarity (content-based)
 # =========================
 SIMILARITY = {
     "Casual":   {"Street": 0.7, "Minimal": 0.6, "Outdoor": 0.5},
@@ -20,135 +20,142 @@ SIMILARITY = {
 }
 
 # =========================
-# 3. Outfit database by genre
+# 3. Color palettes (HEX)
 # =========================
-OUTFIT_DB = {
+COLORS = {
     "Casual": {
-        "inner": ["T-shirt", "Sweatshirt"],
-        "outer": ["Cardigan", "Light Jacket", "None"],
-        "bottom": ["Denim", "Chinos"],
-        "shoes": ["Sneakers"],
-        "colors": ["White", "Gray", "Navy"]
+        "inner": ["#FFFFFF", "#EAEAEA", "#D6E4F0"],
+        "outer": ["#C8D6B9", "#B0C4DE"],
+        "bottom": ["#4F6D7A", "#6B7A8F"],
+        "shoes": ["#FFFFFF", "#333333"]
     },
     "Street": {
-        "inner": ["Graphic Tee", "Oversized Tee"],
-        "outer": ["Hoodie", "Bomber Jacket"],
-        "bottom": ["Cargo Pants", "Wide Denim"],
-        "shoes": ["High-top Sneakers"],
-        "colors": ["Black", "Khaki", "Red"]
+        "inner": ["#000000", "#5A5A5A"],
+        "outer": ["#2F4F4F", "#556B2F"],
+        "bottom": ["#3B3B3B", "#2E2E2E"],
+        "shoes": ["#000000"]
     },
     "Mode": {
-        "inner": ["Slim Shirt", "High-neck Top"],
-        "outer": ["Tailored Jacket"],
-        "bottom": ["Slacks"],
-        "shoes": ["Leather Shoes"],
-        "colors": ["Black", "Dark Gray"]
+        "inner": ["#111111", "#2B2B2B"],
+        "outer": ["#1A1A1A"],
+        "bottom": ["#222222"],
+        "shoes": ["#000000"]
     },
     "Minimal": {
-        "inner": ["Plain Shirt", "Knit"],
-        "outer": ["None", "Coat"],
-        "bottom": ["Straight Pants"],
-        "shoes": ["Simple Sneakers"],
-        "colors": ["White", "Beige", "Gray"]
+        "inner": ["#FFFFFF", "#F2F2F2"],
+        "outer": ["#DCDCDC"],
+        "bottom": ["#BEBEBE"],
+        "shoes": ["#888888"]
     },
     "Formal": {
-        "inner": ["Dress Shirt"],
-        "outer": ["Suit Jacket"],
-        "bottom": ["Suit Pants"],
-        "shoes": ["Oxford Shoes"],
-        "colors": ["Navy", "Black"]
+        "inner": ["#FFFFFF"],
+        "outer": ["#1C1C3C", "#000000"],
+        "bottom": ["#1C1C3C"],
+        "shoes": ["#000000"]
     },
     "Outdoor": {
-        "inner": ["Thermal Top"],
-        "outer": ["Mountain Jacket"],
-        "bottom": ["Utility Pants"],
-        "shoes": ["Hiking Boots"],
-        "colors": ["Olive", "Brown"]
+        "inner": ["#D2B48C"],
+        "outer": ["#556B2F", "#6B8E23"],
+        "bottom": ["#8B7D6B"],
+        "shoes": ["#4B3621"]
     }
 }
 
 # =========================
-# 4. Preference completion
+# 4. Outfit structure
+# =========================
+OUTFIT_DB = {
+    "Casual":   ["T-shirt", "Cardigan", "Denim", "Sneakers"],
+    "Street":   ["Graphic Tee", "Hoodie", "Cargo Pants", "High-top Sneakers"],
+    "Mode":     ["High-neck Top", "Tailored Jacket", "Slacks", "Leather Shoes"],
+    "Minimal":  ["Plain Shirt", "Coat", "Straight Pants", "Simple Sneakers"],
+    "Formal":   ["Dress Shirt", "Suit Jacket", "Suit Pants", "Oxford Shoes"],
+    "Outdoor":  ["Thermal Top", "Mountain Jacket", "Utility Pants", "Hiking Boots"]
+}
+
+# =========================
+# 5. Content-based completion
 # =========================
 def complete_scores(user_scores):
     completed = user_scores.copy()
-    for g, score in completed.items():
-        if score is None:
-            total, weight = 0, 0
-            for k, v in user_scores.items():
-                if v is not None and k in SIMILARITY.get(g, {}):
-                    w = SIMILARITY[g][k]
-                    total += v * w
-                    weight += w
-            completed[g] = round(total / weight, 2) if weight else 0
+    for g, v in completed.items():
+        if v is None:
+            s, w = 0, 0
+            for k, vk in user_scores.items():
+                if vk is not None and k in SIMILARITY.get(g, {}):
+                    weight = SIMILARITY[g][k]
+                    s += vk * weight
+                    w += weight
+            completed[g] = round(s / w, 2) if w else 0
     return completed
 
 # =========================
-# 5. Outfit generation
+# 6. Outfit generation
 # =========================
 def generate_outfit(genre):
-    base = OUTFIT_DB[genre]
+    items = OUTFIT_DB[genre]
+    colors = COLORS[genre]
+
     return {
         "Genre": genre,
-        "Inner": random.choice(base["inner"]),
-        "Outer": random.choice(base["outer"]),
-        "Bottom": random.choice(base["bottom"]),
-        "Shoes": random.choice(base["shoes"]),
-        "Color": random.choice(base["colors"])
+        "Inner": items[0],
+        "Outer": items[1],
+        "Bottom": items[2],
+        "Shoes": items[3],
+        "Color": {
+            "Inner": random.choice(colors["inner"]),
+            "Outer": random.choice(colors["outer"]),
+            "Bottom": random.choice(colors["bottom"]),
+            "Shoes": random.choice(colors["shoes"])
+        }
     }
 
 # =========================
-# 6. Image generation (layered silhouette)
+# 7. Image generation (color-aware)
 # =========================
 def generate_outfit_image(outfit):
     img = Image.new("RGB", (300, 500), "#F5F5F5")
     d = ImageDraw.Draw(img)
 
     # Head
-    d.ellipse((130, 30, 170, 70), fill="black")
+    d.ellipse((130, 30, 170, 70), fill="#333333")
 
     # Inner
-    d.rectangle((120, 80, 180, 200), fill="#CCCCCC")
+    d.rectangle((120, 80, 180, 200), fill=outfit["Color"]["Inner"])
 
-    # Outer (front open)
-    if outfit["Outer"] != "None":
-        d.rectangle((100, 80, 120, 220), fill="#888888")
-        d.rectangle((180, 80, 200, 220), fill="#888888")
+    # Outer (open front)
+    d.rectangle((100, 80, 120, 230), fill=outfit["Color"]["Outer"])
+    d.rectangle((180, 80, 200, 230), fill=outfit["Color"]["Outer"])
 
     # Bottom
-    d.rectangle((120, 200, 145, 350), fill="#555555")
-    d.rectangle((155, 200, 180, 350), fill="#555555")
+    d.rectangle((120, 200, 145, 360), fill=outfit["Color"]["Bottom"])
+    d.rectangle((155, 200, 180, 360), fill=outfit["Color"]["Bottom"])
 
     # Shoes
-    d.rectangle((115, 350, 145, 370), fill="black")
-    d.rectangle((155, 350, 185, 370), fill="black")
+    d.rectangle((115, 360, 145, 380), fill=outfit["Color"]["Shoes"])
+    d.rectangle((155, 360, 185, 380), fill=outfit["Color"]["Shoes"])
 
-    # Label
     d.text((10, 10), outfit["Genre"], fill="black")
-
     return img
 
 # =========================
-# 7. Streamlit UI
+# 8. Streamlit UI
 # =========================
-st.title("Content-Based Outfit Recommendation")
+st.title("Color-Rich Outfit Recommendation")
 
-st.header("Rate Your Style Preference (0–5)")
 user_scores = {}
 for g in GENRES:
     v = st.selectbox(g, ["Unknown", 0, 1, 2, 3, 4, 5], key=g)
     user_scores[g] = None if v == "Unknown" else v
 
-if st.button("Generate Outfit"):
+if st.button("Generate"):
     scores = complete_scores(user_scores)
     top3 = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:3]
-
-    st.subheader("Top 3 Recommended Outfits")
 
     for genre, score in top3:
         outfit = generate_outfit(genre)
         img = generate_outfit_image(outfit)
 
-        st.markdown(f"### {genre} (score: {score})")
+        st.subheader(f"{genre} (score: {score})")
         st.image(img)
         st.json(outfit)
