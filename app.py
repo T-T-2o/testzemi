@@ -63,46 +63,54 @@ def generate_outfit_image(outfit):
     img = Image.new("RGB", (400, 650), "#F2F2F2")
     draw = ImageDraw.Draw(img)
 
-    # Head
+    # ---- Head ----
     draw.ellipse((170, 30, 230, 90), fill="#FFD6A5", outline="black")
 
-    # Top
+    # ---- Inner Top ----
     draw.rectangle(
-        (140, 100, 260, 260),
+        (155, 110, 245, 260),
         fill=outfit["Top"]["color_code"],
         outline="black"
     )
 
-    # Outer (layer)
+    # ---- Outer Jacket (open front) ----
     if outfit["Outer"]["name"] != "None":
-        draw.rectangle(
-            (130, 95, 270, 270),
-            fill=outfit["Outer"]["color_code"],
-            outline="black"
-        )
+        color = outfit["Outer"]["color_code"]
 
-    # Bottom
+        # Left side
+        draw.rectangle((130, 100, 180, 270), fill=color, outline="black")
+        # Right side
+        draw.rectangle((220, 100, 270, 270), fill=color, outline="black")
+
+        # Collar (simple triangles)
+        draw.polygon([(130, 100), (180, 100), (155, 130)],
+                     fill=color, outline="black")
+        draw.polygon([(220, 100), (270, 100), (245, 130)],
+                     fill=color, outline="black")
+
+    # ---- Bottom ----
     draw.rectangle(
         (140, 260, 260, 420),
         fill=outfit["Bottom"]["color_code"],
         outline="black"
     )
 
-    # Legs
+    # ---- Legs ----
     draw.rectangle((150, 420, 185, 550),
                    fill=outfit["Bottom"]["color_code"], outline="black")
     draw.rectangle((215, 420, 250, 550),
                    fill=outfit["Bottom"]["color_code"], outline="black")
 
-    # Shoes
+    # ---- Shoes ----
     draw.rectangle((145, 550, 190, 600),
                    fill=outfit["Shoes"]["color_code"], outline="black")
     draw.rectangle((210, 550, 255, 600),
                    fill=outfit["Shoes"]["color_code"], outline="black")
 
-    draw.text((130, 610), "Outfit Preview", fill="black")
+    draw.text((110, 610), "Outfit Preview (Layered)", fill="black")
 
     return img
+
 
 # ======================
 # UI
