@@ -67,19 +67,33 @@ def generate_outfit(season):
 # Image generation
 # ----------------------
 def generate_outfit_image(outfit):
-    img = Image.new("RGB", (500, 600), "#F8F8F8")
+    img = Image.new("RGB", (400, 600), "#F0F0F0")
     draw = ImageDraw.Draw(img)
 
-    # Title
-    draw.text((170, 30), "Today's Outfit", fill="black")
+    # ---- Head ----
+    draw.ellipse((170, 40, 230, 100), fill="#FFD6A5", outline="black")
 
-    y = 120
-    for key, value in outfit.items():
-        draw.rectangle((60, y - 15, 440, y + 35), outline="black", width=2)
-        draw.text((80, y), f"{key}: {value}", fill="black")
-        y += 80
+    # ---- Top (Upper body) ----
+    top_color = "#A3CEF1"   # blue-ish
+    draw.rectangle((140, 110, 260, 260), fill=top_color, outline="black")
+
+    # ---- Bottom (Lower body) ----
+    bottom_color = "#6C757D"  # gray
+    draw.rectangle((140, 260, 260, 400), fill=bottom_color, outline="black")
+
+    # ---- Legs ----
+    draw.rectangle((150, 400, 185, 520), fill=bottom_color, outline="black")
+    draw.rectangle((215, 400, 250, 520), fill=bottom_color, outline="black")
+
+    # ---- Shoes ----
+    draw.rectangle((145, 520, 190, 560), fill="#333333", outline="black")
+    draw.rectangle((210, 520, 255, 560), fill="#333333", outline="black")
+
+    # ---- Labels (small text) ----
+    draw.text((10, 10), "Visual Outfit Preview", fill="black")
 
     return img
+
 
 # ----------------------
 # Streamlit UI
