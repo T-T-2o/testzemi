@@ -13,51 +13,47 @@ st.set_page_config(
 
 # ======================
 # Clothing data
+# name + color name + color code
 # ======================
-tops = {
-    "White T-shirt": "#FFFFFF",
-    "Black T-shirt": "#222222",
-    "Shirt": "#E0E0E0",
-    "Hoodie": "#7A9E9F",
-    "Knit": "#C97C5D",
-    "Jacket": "#5F6CAF"
-}
+tops = [
+    {"name": "White T-shirt", "color_name": "White", "color_code": "#FFFFFF"},
+    {"name": "Black T-shirt", "color_name": "Black", "color_code": "#222222"},
+    {"name": "Shirt", "color_name": "Light Gray", "color_code": "#E0E0E0"},
+    {"name": "Hoodie", "color_name": "Blue Green", "color_code": "#7A9E9F"},
+    {"name": "Knit", "color_name": "Brown", "color_code": "#C97C5D"},
+    {"name": "Jacket", "color_name": "Navy", "color_code": "#5F6CAF"},
+]
 
-bottoms = {
-    "Denim Pants": "#4F6D7A",
-    "Black Slacks": "#2E2E2E",
-    "Chino Pants": "#C2B280",
-    "Short Pants": "#A5A58D"
-}
+bottoms = [
+    {"name": "Denim Pants", "color_name": "Indigo", "color_code": "#4F6D7A"},
+    {"name": "Black Slacks", "color_name": "Black", "color_code": "#2E2E2E"},
+    {"name": "Chino Pants", "color_name": "Beige", "color_code": "#C2B280"},
+    {"name": "Short Pants", "color_name": "Khaki", "color_code": "#A5A58D"},
+]
 
-outerwear = {
-    "None": None,
-    "Cardigan": "#B5838D",
-    "Coat": "#6D6875",
-    "Down Jacket": "#495057"
-}
+outerwear = [
+    {"name": "None", "color_name": "-", "color_code": None},
+    {"name": "Cardigan", "color_name": "Rose Brown", "color_code": "#B5838D"},
+    {"name": "Coat", "color_name": "Dark Gray", "color_code": "#6D6875"},
+    {"name": "Down Jacket", "color_name": "Charcoal", "color_code": "#495057"},
+]
 
-shoes = {
-    "Sneakers": "#FFFFFF",
-    "Leather Shoes": "#3A1F04",
-    "Boots": "#5A3825",
-    "Sandals": "#D6CCC2"
-}
+shoes = [
+    {"name": "Sneakers", "color_name": "White", "color_code": "#FFFFFF"},
+    {"name": "Leather Shoes", "color_name": "Dark Brown", "color_code": "#3A1F04"},
+    {"name": "Boots", "color_name": "Brown", "color_code": "#5A3825"},
+    {"name": "Sandals", "color_name": "Ivory", "color_code": "#D6CCC2"},
+]
 
 # ======================
 # Outfit generation
 # ======================
-def generate_outfit(season):
-    top = random.choice(list(tops.keys()))
-    bottom = random.choice(list(bottoms.keys()))
-    outer = random.choice(list(outerwear.keys()))
-    shoe = random.choice(list(shoes.keys()))
-
+def generate_outfit():
     return {
-        "Top": top,
-        "Bottom": bottom,
-        "Outer": outer,
-        "Shoes": shoe
+        "Top": random.choice(tops),
+        "Bottom": random.choice(bottoms),
+        "Outer": random.choice(outerwear),
+        "Shoes": random.choice(shoes),
     }
 
 # ======================
@@ -67,41 +63,44 @@ def generate_outfit_image(outfit):
     img = Image.new("RGB", (400, 650), "#F2F2F2")
     draw = ImageDraw.Draw(img)
 
-    # ---- Head ----
+    # Head
     draw.ellipse((170, 30, 230, 90), fill="#FFD6A5", outline="black")
 
-    # ---- Top ----
+    # Top
     draw.rectangle(
         (140, 100, 260, 260),
-        fill=tops[outfit["Top"]],
+        fill=outfit["Top"]["color_code"],
         outline="black"
     )
 
-    # ---- Outer (layered) ----
-    if outfit["Outer"] != "None":
+    # Outer (layer)
+    if outfit["Outer"]["name"] != "None":
         draw.rectangle(
             (130, 95, 270, 270),
-            fill=outerwear[outfit["Outer"]],
+            fill=outfit["Outer"]["color_code"],
             outline="black"
         )
 
-    # ---- Bottom ----
+    # Bottom
     draw.rectangle(
         (140, 260, 260, 420),
-        fill=bottoms[outfit["Bottom"]],
+        fill=outfit["Bottom"]["color_code"],
         outline="black"
     )
 
-    # ---- Legs ----
-    draw.rectangle((150, 420, 185, 550), fill=bottoms[outfit["Bottom"]], outline="black")
-    draw.rectangle((215, 420, 250, 550), fill=bottoms[outfit["Bottom"]], outline="black")
+    # Legs
+    draw.rectangle((150, 420, 185, 550),
+                   fill=outfit["Bottom"]["color_code"], outline="black")
+    draw.rectangle((215, 420, 250, 550),
+                   fill=outfit["Bottom"]["color_code"], outline="black")
 
-    # ---- Shoes ----
-    draw.rectangle((145, 550, 190, 600), fill=shoes[outfit["Shoes"]], outline="black")
-    draw.rectangle((210, 550, 255, 600), fill=shoes[outfit["Shoes"]], outline="black")
+    # Shoes
+    draw.rectangle((145, 550, 190, 600),
+                   fill=outfit["Shoes"]["color_code"], outline="black")
+    draw.rectangle((210, 550, 255, 600),
+                   fill=outfit["Shoes"]["color_code"], outline="black")
 
-    # ---- Title ----
-    draw.text((120, 610), "Outfit Preview", fill="black")
+    draw.text((130, 610), "Outfit Preview", fill="black")
 
     return img
 
@@ -109,14 +108,17 @@ def generate_outfit_image(outfit):
 # UI
 # ======================
 st.title("👕 Outfit Generator")
-st.write("Generate a random outfit with a visual preview.")
+st.write("Generate a random outfit with colors and a visual preview.")
 
 if st.button("Generate Outfit"):
-    outfit = generate_outfit("All")
+    outfit = generate_outfit()
 
     st.subheader("Outfit Details")
-    for k, v in outfit.items():
-        st.write(f"**{k}**: {v}")
+    for category, item in outfit.items():
+        st.write(
+            f"**{category}**: {item['name']} "
+            f"(Color: {item['color_name']})"
+        )
 
     st.subheader("Outfit Image")
     st.image(generate_outfit_image(outfit), use_container_width=True)
