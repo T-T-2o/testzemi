@@ -1,57 +1,82 @@
 import streamlit as st
 import random
-from PIL import Image, ImageDraw, ImageFont
-
-st.set_page_config(page_title="ランダム服装ジェネレーター", page_icon="👕")
+from PIL import Image, ImageDraw
 
 # ----------------------
-# 服データ
+# Page config
 # ----------------------
-tops = ["白Tシャツ", "黒Tシャツ", "シャツ", "パーカー", "ニット", "ジャケット"]
-bottoms = ["デニムパンツ", "黒スラックス", "チノパン", "ショートパンツ"]
-outerwear = ["なし", "カーディガン", "コート", "ダウンジャケット"]
-shoes = ["スニーカー", "革靴", "ローファー", "ブーツ", "サンダル"]
-accessories = ["なし", "腕時計", "ネックレス", "キャップ", "バックパック"]
+st.set_page_config(
+    page_title="Outfit Generator",
+    page_icon="👕",
+    layout="centered"
+)
 
 # ----------------------
-# コーデ生成
+# Clothing data (EN)
+# ----------------------
+tops = [
+    "White T-shirt", "Black T-shirt", "Shirt",
+    "Hoodie", "Knit", "Jacket"
+]
+
+bottoms = [
+    "Denim Pants", "Black Slacks",
+    "Chino Pants", "Short Pants"
+]
+
+outerwear = [
+    "None", "Cardigan", "Coat", "Down Jacket"
+]
+
+shoes = [
+    "Sneakers", "Leather Shoes",
+    "Loafers", "Boots", "Sandals"
+]
+
+accessories = [
+    "None", "Watch", "Necklace",
+    "Cap", "Backpack"
+]
+
+# ----------------------
+# Outfit generation
 # ----------------------
 def generate_outfit(season):
-    if season == "夏":
-        tops_season = ["白Tシャツ", "黒Tシャツ", "半袖シャツ"]
-        outer = ["なし"]
-    elif season == "冬":
-        tops_season = ["ニット", "パーカー"]
-        outer = ["コート", "ダウンジャケット"]
-    elif season in ["春", "秋"]:
-        tops_season = ["シャツ", "パーカー", "ジャケット"]
-        outer = ["カーディガン", "ジャケット"]
+    if season == "Summer":
+        tops_season = ["White T-shirt", "Black T-shirt", "Short Sleeve Shirt"]
+        outer = ["None"]
+    elif season == "Winter":
+        tops_season = ["Knit", "Hoodie"]
+        outer = ["Coat", "Down Jacket"]
+    elif season in ["Spring", "Autumn"]:
+        tops_season = ["Shirt", "Hoodie", "Jacket"]
+        outer = ["Cardigan", "Jacket"]
     else:
         tops_season = tops
         outer = outerwear
 
     return {
-        "トップス": random.choice(tops_season),
-        "ボトムス": random.choice(bottoms),
-        "アウター": random.choice(outer),
-        "靴": random.choice(shoes),
-        "アクセサリー": random.choice(accessories)
+        "Top": random.choice(tops_season),
+        "Bottom": random.choice(bottoms),
+        "Outer": random.choice(outer),
+        "Shoes": random.choice(shoes),
+        "Accessory": random.choice(accessories)
     }
 
 # ----------------------
-# 画像生成
+# Image generation
 # ----------------------
 def generate_outfit_image(outfit):
     img = Image.new("RGB", (500, 600), "#F8F8F8")
     draw = ImageDraw.Draw(img)
 
-    # タイトル
-    draw.text((140, 30), "Today's Outfit", fill="black")
+    # Title
+    draw.text((170, 30), "Today's Outfit", fill="black")
 
     y = 120
     for key, value in outfit.items():
-        draw.rectangle((80, y - 10, 420, y + 40), outline="black", width=2)
-        draw.text((100, y), f"{key}：{value}", fill="black")
+        draw.rectangle((60, y - 15, 440, y + 35), outline="black", width=2)
+        draw.text((80, y), f"{key}: {value}", fill="black")
         y += 80
 
     return img
@@ -59,21 +84,23 @@ def generate_outfit_image(outfit):
 # ----------------------
 # Streamlit UI
 # ----------------------
-st.title("👕 ランダム服装ジェネレーター")
-st.write("ボタンを押すと、コーデとその画像を生成します。")
+st.title("👕 Outfit Generator")
+st.write("Click the button to generate a random outfit and its image.")
 
-season = st.selectbox("季節を選択してください", ["指定なし", "春", "夏", "秋", "冬"])
+season = st.selectbox(
+    "Select season",
+    ["All", "Spring", "Summer", "Autumn", "Winter"]
+)
 
-if st.button("コーデを生成する"):
+if st.button("Generate Outfit"):
     outfit = generate_outfit(season)
 
-    st.subheader("🎽 今日のコーデ（テキスト）")
+    st.subheader("Outfit Details")
     for k, v in outfit.items():
-        st.write(f"**{k}**：{v}")
+        st.write(f"**{k}**: {v}")
 
-    # 画像生成・表示
-    outfit_image = generate_outfit_image(outfit)
-    st.subheader("🖼️ コーデ画像")
-    st.image(outfit_image, use_container_width=True)
+    st.subheader("Outfit Image")
+    img = generate_outfit_image(outfit)
+    st.image(img, use_container_width=True)
 
-    st.success("コーデと画像を生成しました！")
+    st.success("New outfit generated!")
