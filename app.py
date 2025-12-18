@@ -1,25 +1,16 @@
 import streamlit as st
-import numpy as np
-
-st.title("Outfit Preference Survey (Content-Based)")
+import random
+from PIL import Image, ImageDraw
 
 # =========================
 # 1. Genre definition
 # =========================
-genres = [
-    "Casual",
-    "Street",
-    "Mode",
-    "Minimal",
-    "Formal",
-    "Outdoor"
-]
+GENRES = ["Casual", "Street", "Mode", "Minimal", "Formal", "Outdoor"]
 
 # =========================
-# 2. Genre similarity matrix
+# 2. Genre similarity (content-based)
 # =========================
-# 0.0 ~ 1.0 (hand-designed, editable later)
-similarity = {
+SIMILARITY = {
     "Casual":   {"Street": 0.7, "Minimal": 0.6, "Outdoor": 0.5},
     "Street":   {"Casual": 0.7, "Mode": 0.6},
     "Mode":     {"Street": 0.6, "Formal": 0.7, "Minimal": 0.5},
@@ -29,61 +20,135 @@ similarity = {
 }
 
 # =========================
-# 3. User input (0–5 or Unknown)
+# 3. Outfit database by genre
 # =========================
-st.header("Rate your preference (0–5)")
-
-user_scores = {}
-
-for genre in genres:
-    score = st.selectbox(
-        f"{genre}",
-        options=["Unknown", 0, 1, 2, 3, 4, 5],
-        key=genre
-    )
-    user_scores[genre] = None if score == "Unknown" else score
+OUTFIT_DB = {
+    "Casual": {
+        "inner": ["T-shirt", "Sweatshirt"],
+        "outer": ["Cardigan", "Light Jacket", "None"],
+        "bottom": ["Denim", "Chinos"],
+        "shoes": ["Sneakers"],
+        "colors": ["White", "Gray", "Navy"]
+    },
+    "Street": {
+        "inner": ["Graphic Tee", "Oversized Tee"],
+        "outer": ["Hoodie", "Bomber Jacket"],
+        "bottom": ["Cargo Pants", "Wide Denim"],
+        "shoes": ["High-top Sneakers"],
+        "colors": ["Black", "Khaki", "Red"]
+    },
+    "Mode": {
+        "inner": ["Slim Shirt", "High-neck Top"],
+        "outer": ["Tailored Jacket"],
+        "bottom": ["Slacks"],
+        "shoes": ["Leather Shoes"],
+        "colors": ["Black", "Dark Gray"]
+    },
+    "Minimal": {
+        "inner": ["Plain Shirt", "Knit"],
+        "outer": ["None", "Coat"],
+        "bottom": ["Straight Pants"],
+        "shoes": ["Simple Sneakers"],
+        "colors": ["White", "Beige", "Gray"]
+    },
+    "Formal": {
+        "inner": ["Dress Shirt"],
+        "outer": ["Suit Jacket"],
+        "bottom": ["Suit Pants"],
+        "shoes": ["Oxford Shoes"],
+        "colors": ["Navy", "Black"]
+    },
+    "Outdoor": {
+        "inner": ["Thermal Top"],
+        "outer": ["Mountain Jacket"],
+        "bottom": ["Utility Pants"],
+        "shoes": ["Hiking Boots"],
+        "colors": ["Olive", "Brown"]
+    }
+}
 
 # =========================
-# 4. Content-based score completion
+# 4. Preference completion
 # =========================
-def complete_scores(user_scores, similarity):
+def complete_scores(user_scores):
     completed = user_scores.copy()
-
-    for genre, score in completed.items():
+    for g, score in completed.items():
         if score is None:
-            weighted_sum = 0
-            weight_total = 0
-
-            for g, g_score in user_scores.items():
-                if g_score is not None and g in similarity.get(genre, {}):
-                    w = similarity[genre][g]
-                    weighted_sum += g_score * w
-                    weight_total += w
-
-            completed[genre] = round(weighted_sum / weight_total, 2) if weight_total > 0 else 0
-
+            total, weight = 0, 0
+            for k, v in user_scores.items():
+                if v is not None and k in SIMILARITY.get(g, {}):
+                    w = SIMILARITY[g][k]
+                    total += v * w
+                    weight += w
+            completed[g] = round(total / weight, 2) if weight else 0
     return completed
 
 # =========================
-# 5. Recommendation
+# 5. Outfit generation
 # =========================
-if st.button("Recommend Outfit"):
-    completed_scores = complete_scores(user_scores, similarity)
+def generate_outfit(genre):
+    base = OUTFIT_DB[genre]
+    return {
+        "Genre": genre,
+        "Inner": random.choice(base["inner"]),
+        "Outer": random.choice(base["outer"]),
+        "Bottom": random.choice(base["bottom"]),
+        "Shoes": random.choice(base["shoes"]),
+        "Color": random.choice(base["colors"])
+    }
 
-    st.subheader("Completed Preference Scores")
-    st.write(completed_scores)
+# =========================
+# 6. Image generation (layered silhouette)
+# =========================
+def generate_outfit_image(outfit):
+    img = Image.new("RGB", (300, 500), "#F5F5F5")
+    d = ImageDraw.Draw(img)
 
-    # Top 3 genres
-    top_genres = sorted(
-        completed_scores.items(),
-        key=lambda x: x[1],
-        reverse=True
-    )[:3]
+    # Head
+    d.ellipse((130, 30, 170, 70), fill="black")
 
-    st.subheader("Top 3 Recommended Styles")
-    for genre, score in top_genres:
-        st.write(f"• {genre} (score: {score})")
+    # Inner
+    d.rectangle((120, 80, 180, 200), fill="#CCCCCC")
 
-    # この top_genres を
-    # 👉 次ステップで outfit / image generation に接続
+    # Outer (front open)
+    if outfit["Outer"] != "None":
+        d.rectangle((100, 80, 120, 220), fill="#888888")
+        d.rectangle((180, 80, 200, 220), fill="#888888")
 
+    # Bottom
+    d.rectangle((120, 200, 145, 350), fill="#555555")
+    d.rectangle((155, 200, 180, 350), fill="#555555")
+
+    # Shoes
+    d.rectangle((115, 350, 145, 370), fill="black")
+    d.rectangle((155, 350, 185, 370), fill="black")
+
+    # Label
+    d.text((10, 10), outfit["Genre"], fill="black")
+
+    return img
+
+# =========================
+# 7. Streamlit UI
+# =========================
+st.title("Content-Based Outfit Recommendation")
+
+st.header("Rate Your Style Preference (0–5)")
+user_scores = {}
+for g in GENRES:
+    v = st.selectbox(g, ["Unknown", 0, 1, 2, 3, 4, 5], key=g)
+    user_scores[g] = None if v == "Unknown" else v
+
+if st.button("Generate Outfit"):
+    scores = complete_scores(user_scores)
+    top3 = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:3]
+
+    st.subheader("Top 3 Recommended Outfits")
+
+    for genre, score in top3:
+        outfit = generate_outfit(genre)
+        img = generate_outfit_image(outfit)
+
+        st.markdown(f"### {genre} (score: {score})")
+        st.image(img)
+        st.json(outfit)
