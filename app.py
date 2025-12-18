@@ -2,119 +2,123 @@ import streamlit as st
 import random
 from PIL import Image, ImageDraw
 
-# ----------------------
+# ======================
 # Page config
-# ----------------------
+# ======================
 st.set_page_config(
     page_title="Outfit Generator",
     page_icon="👕",
     layout="centered"
 )
 
-# ----------------------
-# Clothing data (EN)
-# ----------------------
-tops = [
-    "White T-shirt", "Black T-shirt", "Shirt",
-    "Hoodie", "Knit", "Jacket"
-]
+# ======================
+# Clothing data
+# ======================
+tops = {
+    "White T-shirt": "#FFFFFF",
+    "Black T-shirt": "#222222",
+    "Shirt": "#E0E0E0",
+    "Hoodie": "#7A9E9F",
+    "Knit": "#C97C5D",
+    "Jacket": "#5F6CAF"
+}
 
-bottoms = [
-    "Denim Pants", "Black Slacks",
-    "Chino Pants", "Short Pants"
-]
+bottoms = {
+    "Denim Pants": "#4F6D7A",
+    "Black Slacks": "#2E2E2E",
+    "Chino Pants": "#C2B280",
+    "Short Pants": "#A5A58D"
+}
 
-outerwear = [
-    "None", "Cardigan", "Coat", "Down Jacket"
-]
+outerwear = {
+    "None": None,
+    "Cardigan": "#B5838D",
+    "Coat": "#6D6875",
+    "Down Jacket": "#495057"
+}
 
-shoes = [
-    "Sneakers", "Leather Shoes",
-    "Loafers", "Boots", "Sandals"
-]
+shoes = {
+    "Sneakers": "#FFFFFF",
+    "Leather Shoes": "#3A1F04",
+    "Boots": "#5A3825",
+    "Sandals": "#D6CCC2"
+}
 
-accessories = [
-    "None", "Watch", "Necklace",
-    "Cap", "Backpack"
-]
-
-# ----------------------
+# ======================
 # Outfit generation
-# ----------------------
+# ======================
 def generate_outfit(season):
-    if season == "Summer":
-        tops_season = ["White T-shirt", "Black T-shirt", "Short Sleeve Shirt"]
-        outer = ["None"]
-    elif season == "Winter":
-        tops_season = ["Knit", "Hoodie"]
-        outer = ["Coat", "Down Jacket"]
-    elif season in ["Spring", "Autumn"]:
-        tops_season = ["Shirt", "Hoodie", "Jacket"]
-        outer = ["Cardigan", "Jacket"]
-    else:
-        tops_season = tops
-        outer = outerwear
+    top = random.choice(list(tops.keys()))
+    bottom = random.choice(list(bottoms.keys()))
+    outer = random.choice(list(outerwear.keys()))
+    shoe = random.choice(list(shoes.keys()))
 
     return {
-        "Top": random.choice(tops_season),
-        "Bottom": random.choice(bottoms),
-        "Outer": random.choice(outer),
-        "Shoes": random.choice(shoes),
-        "Accessory": random.choice(accessories)
+        "Top": top,
+        "Bottom": bottom,
+        "Outer": outer,
+        "Shoes": shoe
     }
 
-# ----------------------
+# ======================
 # Image generation
-# ----------------------
+# ======================
 def generate_outfit_image(outfit):
-    img = Image.new("RGB", (400, 600), "#F0F0F0")
+    img = Image.new("RGB", (400, 650), "#F2F2F2")
     draw = ImageDraw.Draw(img)
 
     # ---- Head ----
-    draw.ellipse((170, 40, 230, 100), fill="#FFD6A5", outline="black")
+    draw.ellipse((170, 30, 230, 90), fill="#FFD6A5", outline="black")
 
-    # ---- Top (Upper body) ----
-    top_color = "#A3CEF1"   # blue-ish
-    draw.rectangle((140, 110, 260, 260), fill=top_color, outline="black")
+    # ---- Top ----
+    draw.rectangle(
+        (140, 100, 260, 260),
+        fill=tops[outfit["Top"]],
+        outline="black"
+    )
 
-    # ---- Bottom (Lower body) ----
-    bottom_color = "#6C757D"  # gray
-    draw.rectangle((140, 260, 260, 400), fill=bottom_color, outline="black")
+    # ---- Outer (layered) ----
+    if outfit["Outer"] != "None":
+        draw.rectangle(
+            (130, 95, 270, 270),
+            fill=outerwear[outfit["Outer"]],
+            outline="black"
+        )
+
+    # ---- Bottom ----
+    draw.rectangle(
+        (140, 260, 260, 420),
+        fill=bottoms[outfit["Bottom"]],
+        outline="black"
+    )
 
     # ---- Legs ----
-    draw.rectangle((150, 400, 185, 520), fill=bottom_color, outline="black")
-    draw.rectangle((215, 400, 250, 520), fill=bottom_color, outline="black")
+    draw.rectangle((150, 420, 185, 550), fill=bottoms[outfit["Bottom"]], outline="black")
+    draw.rectangle((215, 420, 250, 550), fill=bottoms[outfit["Bottom"]], outline="black")
 
     # ---- Shoes ----
-    draw.rectangle((145, 520, 190, 560), fill="#333333", outline="black")
-    draw.rectangle((210, 520, 255, 560), fill="#333333", outline="black")
+    draw.rectangle((145, 550, 190, 600), fill=shoes[outfit["Shoes"]], outline="black")
+    draw.rectangle((210, 550, 255, 600), fill=shoes[outfit["Shoes"]], outline="black")
 
-    # ---- Labels (small text) ----
-    draw.text((10, 10), "Visual Outfit Preview", fill="black")
+    # ---- Title ----
+    draw.text((120, 610), "Outfit Preview", fill="black")
 
     return img
 
-
-# ----------------------
-# Streamlit UI
-# ----------------------
+# ======================
+# UI
+# ======================
 st.title("👕 Outfit Generator")
-st.write("Click the button to generate a random outfit and its image.")
-
-season = st.selectbox(
-    "Select season",
-    ["All", "Spring", "Summer", "Autumn", "Winter"]
-)
+st.write("Generate a random outfit with a visual preview.")
 
 if st.button("Generate Outfit"):
-    outfit = generate_outfit(season)
+    outfit = generate_outfit("All")
 
     st.subheader("Outfit Details")
     for k, v in outfit.items():
         st.write(f"**{k}**: {v}")
 
     st.subheader("Outfit Image")
-    img = generate_outfit_image(outfit)
-    st.image(img, use_container_width=True)
+    st.image(generate_outfit_image(outfit), use_container_width=True)
 
-    st.success("New outfit generated!")
+    st.success("Outfit generated successfully!")
