@@ -1,6 +1,7 @@
 import streamlit as st
-
 import random
+
+st.set_page_config(page_title="ランダム服装ジェネレーター", page_icon="👕")
 
 # 服の候補リスト
 tops = [
@@ -23,30 +24,45 @@ accessories = [
     "なし", "腕時計", "ネックレス", "キャップ", "バックパック"
 ]
 
-def generate_outfit():
-    outfit = {
-        "トップス": random.choice(tops),
+st.title("👕 ランダム服装ジェネレーター")
+
+st.write("ボタンを押すと、今日のコーデをランダムに提案します。")
+
+# 季節選択
+season = st.selectbox(
+    "季節を選択してください",
+    ("指定なし", "春", "夏", "秋", "冬")
+)
+
+def generate_outfit(season):
+    if season == "夏":
+        tops_season = ["白Tシャツ", "黒Tシャツ", "半袖シャツ"]
+        outer = ["なし"]
+    elif season == "冬":
+        tops_season = ["ニット", "パーカー"]
+        outer = ["コート", "ダウンジャケット"]
+    elif season == "春" or season == "秋":
+        tops_season = ["シャツ", "パーカー", "ジャケット"]
+        outer = ["カーディガン", "ジャケット"]
+    else:
+        tops_season = tops
+        outer = outerwear
+
+    return {
+        "トップス": random.choice(tops_season),
         "ボトムス": random.choice(bottoms),
-        "アウター": random.choice(outerwear),
+        "アウター": random.choice(outer),
         "靴": random.choice(shoes),
         "アクセサリー": random.choice(accessories)
     }
-    return outfit
 
-# 実行
-if __name__ == "__main__":
-    outfit = generate_outfit()
-    print("🎽 今日のランダムコーデ 🎽")
+# ボタン
+if st.button("コーデを生成する"):
+    outfit = generate_outfit(season)
+
+    st.subheader("🎽 今日のコーデ")
     for key, value in outfit.items():
-        print(f"{key}：{value}")
+        st.write(f"**{key}**：{value}")
 
-
-#テスト
-"""
-st.import(cv2)
-img = cv2.imread("eiga.jpg")
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-plt.imshow(img)
-plt.show()
-"""
+    st.success("新しいコーデを生成しました！")
 
