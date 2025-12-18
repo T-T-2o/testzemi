@@ -32,36 +32,11 @@ COLOR_SIM = {
 # 3. Color palettes
 # =========================
 COLOR_PALETTE = {
-    "Monochrome": {
-        "inner": ["#000000", "#2B2B2B"],
-        "outer": ["#1A1A1A"],
-        "bottom": ["#222222"],
-        "shoes": ["#000000"]
-    },
-    "Neutral": {
-        "inner": ["#FFFFFF", "#F2F2F2"],
-        "outer": ["#DCDCDC"],
-        "bottom": ["#BEBEBE"],
-        "shoes": ["#888888"]
-    },
-    "Warm": {
-        "inner": ["#F5CBA7"],
-        "outer": ["#DC7633"],
-        "bottom": ["#AF601A"],
-        "shoes": ["#6E2C00"]
-    },
-    "Cool": {
-        "inner": ["#AED6F1"],
-        "outer": ["#5DADE2"],
-        "bottom": ["#2E86C1"],
-        "shoes": ["#1B4F72"]
-    },
-    "Earth": {
-        "inner": ["#D2B48C"],
-        "outer": ["#6B8E23"],
-        "bottom": ["#8B7D6B"],
-        "shoes": ["#4B3621"]
-    }
+    "Monochrome": {"inner": ["#000000", "#2B2B2B"], "outer": ["#1A1A1A"], "bottom": ["#222222"], "shoes": ["#000000"]},
+    "Neutral": {"inner": ["#FFFFFF", "#F2F2F2"], "outer": ["#DCDCDC"], "bottom": ["#BEBEBE"], "shoes": ["#888888"]},
+    "Warm": {"inner": ["#F5CBA7"], "outer": ["#DC7633"], "bottom": ["#AF601A"], "shoes": ["#6E2C00"]},
+    "Cool": {"inner": ["#AED6F1"], "outer": ["#5DADE2"], "bottom": ["#2E86C1"], "shoes": ["#1B4F72"]},
+    "Earth": {"inner": ["#D2B48C"], "outer": ["#6B8E23"], "bottom": ["#8B7D6B"], "shoes": ["#4B3621"]}
 }
 
 # =========================
@@ -136,30 +111,35 @@ def generate_image(outfit):
 # =========================
 # 8. Streamlit UI
 # =========================
-st.title("Content-Based Outfit & Color Recommendation")
+st.title("Content-Based Outfit Recommendation (3 Suggestions)")
 
 st.header("Style Preference (0–5)")
 genre_scores = {
-    g: None if (v := st.selectbox(g, ["Unknown", 0, 1, 2, 3, 4, 5], key=g)) == "Unknown" else v
+    g: None if (v := st.selectbox(g, ["Unknown", 0, 1, 2, 3, 4, 5], key=f"g_{g}")) == "Unknown" else v
     for g in GENRES
 }
 
 st.header("Color Preference (0–5)")
 color_scores = {
-    c: None if (v := st.selectbox(c, ["Unknown", 0, 1, 2, 3, 4, 5], key=c)) == "Unknown" else v
+    c: None if (v := st.selectbox(c, ["Unknown", 0, 1, 2, 3, 4, 5], key=f"c_{c}")) == "Unknown" else v
     for c in COLOR_STYLES
 }
 
-if st.button("Generate Outfit"):
+if st.button("Generate Outfits"):
     genre_result = complete_scores(genre_scores, GENRE_SIM)
     color_result = complete_scores(color_scores, COLOR_SIM)
 
-    top_genre = max(genre_result, key=genre_result.get)
-    top_color = max(color_result, key=color_result.get)
+    top_genres = sorted(genre_result, key=genre_result.get, reverse=True)[:3]
+    top_colors = sorted(color_result, key=color_result.get, reverse=True)[:2]
 
-    outfit = generate_outfit(top_genre, top_color)
-    img = generate_image(outfit)
+    st.subheader("Recommended Outfits")
 
-    st.subheader("Recommended Outfit")
-    st.image(img)
-    st.json(outfit)
+    for i, genre in enumerate(top_genres):
+        color_style = random.choice(top_colors)
+        outfit = generate_outfit(genre, color_style)
+        img = generate_image(outfit)
+
+        st.markdown(f"### Outfit {i+1}")
+        st.image(img)
+        st.json(outfit)
+
