@@ -143,3 +143,13 @@ if st.button("Generate Outfits"):
         st.image(img)
         st.json(outfit)
 
+    # =========================
+    # 9. Display final scores (NEW)
+    # =========================
+    st.subheader("Content-Based Recommendation Scores")
+
+    st.markdown("**Genre Scores**")
+    st.json(genre_result)
+
+    st.markdown("**Color Preference Scores**")
+    st.json(color_result)
