@@ -20,6 +20,26 @@ GENRE_SIM = {
     "Outdoor": {"Casual": 0.5}
 }
 
+used_colors = []
+
+for i, genre in enumerate(top_genres):
+
+    # first candidate
+    color_style = random.choice(top_colors)
+
+    # avoid duplication
+    if color_style in used_colors and len(top_colors) > 1:
+        color_style = random.choice([c for c in top_colors if c not in used_colors])
+
+    used_colors.append(color_style)
+
+    outfit = generate_outfit(genre, color_style)
+    img = generate_image(outfit)
+
+    st.markdown(f"### Outfit {i+1}")
+    st.image(img)
+    st.json(outfit)
+
 COLOR_SIM = {
     "Monochrome": {"Neutral": 0.7},
     "Neutral": {"Monochrome": 0.7, "Earth": 0.6},
