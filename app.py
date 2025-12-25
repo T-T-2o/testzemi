@@ -79,25 +79,44 @@ def generate_image(color_rgb, gender):
     img = Image.new("RGB", (260, 460), "white")
     d = ImageDraw.Draw(img)
 
-    # head
+    # Head
     d.ellipse((110, 20, 150, 60), fill=(220, 200, 180))
 
-    # gender-based shoulder width
-    shoulder = 70 if gender == "Male" else 55
+    if gender == "Male":
+        # ===== Male silhouette (current style) =====
+        shoulder = 70
 
-    # torso
-    d.polygon([
-        (130 - shoulder, 70),
-        (130 + shoulder, 70),
-        (160, 260),
-        (100, 260)
-    ], fill=color_rgb, outline="black")
+        # Torso
+        d.polygon([
+            (130 - shoulder, 70),
+            (130 + shoulder, 70),
+            (160, 260),
+            (100, 260)
+        ], fill=color_rgb, outline="black")
 
-    # legs
-    d.rectangle((105, 260, 125, 420), fill=color_rgb)
-    d.rectangle((135, 260, 155, 420), fill=color_rgb)
+        # Legs
+        d.rectangle((105, 260, 125, 420), fill=color_rgb)
+        d.rectangle((135, 260, 155, 420), fill=color_rgb)
+
+    else:
+        # ===== Female silhouette (toilet-sign triangle) =====
+
+        # Upper body (small rectangle)
+        d.rectangle(
+            (115, 70, 145, 140),
+            fill=color_rgb,
+            outline="black"
+        )
+
+        # Skirt (triangle)
+        d.polygon([
+            (130, 140),     # top
+            (60, 360),      # left bottom
+            (200, 360)      # right bottom
+        ], fill=color_rgb, outline="black")
 
     return img
+
 
 # =====================
 # 6. Output
