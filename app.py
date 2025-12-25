@@ -91,15 +91,11 @@ def generate_image(color_rgb, gender):
 
     if gender == "Male":
         # =====================
-        # Male (toilet sign style)
+        # Male silhouette (toilet sign)
         # =====================
 
-        # Torso
-        d.rectangle(
-            (100, 70, 160, 180),
-            fill=color_rgb,
-            outline=outline
-        )
+        # Torso (rectangle)
+        d.rectangle((100, 70, 160, 180), fill=color_rgb, outline=outline)
 
         # Arms
         d.rectangle((80, 80, 100, 180), fill=color_rgb, outline=outline)
@@ -111,36 +107,30 @@ def generate_image(color_rgb, gender):
 
     else:
         # =====================
-        # Female (toilet sign style)
+        # Female silhouette (triangle torso + legs)
         # =====================
 
-        # Upper torso
-        d.rectangle(
-            (110, 70, 150, 150),
-            fill=color_rgb,
-            outline=outline
-        )
-
-        # Arms
-        d.rectangle((90, 80, 110, 160), fill=color_rgb, outline=outline)
-        d.rectangle((150, 80, 170, 160), fill=color_rgb, outline=outline)
-
-        # Skirt (triangle)
+        # Upper body (inverted triangle)
         d.polygon(
             [
-                (130, 150),   # top
-                (70, 320),    # left bottom
-                (190, 320)    # right bottom
+                (80, 70),     # left shoulder
+                (180, 70),    # right shoulder
+                (130, 180)    # waist point
             ],
             fill=color_rgb,
             outline=outline
         )
 
-        # Legs (short)
-        d.rectangle((115, 320, 130, 400), fill=color_rgb, outline=outline)
-        d.rectangle((130, 320, 145, 400), fill=color_rgb, outline=outline)
+        # Arms
+        d.rectangle((60, 80, 80, 170), fill=color_rgb, outline=outline)
+        d.rectangle((180, 80, 200, 170), fill=color_rgb, outline=outline)
+
+        # Legs (same as male)
+        d.rectangle((105, 180, 125, 360), fill=color_rgb, outline=outline)
+        d.rectangle((135, 180, 155, 360), fill=color_rgb, outline=outline)
 
     return img
+
 
 
 
