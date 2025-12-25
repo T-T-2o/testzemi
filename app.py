@@ -75,47 +75,73 @@ def generate_outfit(genre):
 # 5. Image Generator
 # =====================
 
+from PIL import Image, ImageDraw
+
 def generate_image(color_rgb, gender):
     img = Image.new("RGB", (260, 460), "white")
     d = ImageDraw.Draw(img)
 
-    # Head
-    d.ellipse((110, 20, 150, 60), fill=(220, 200, 180))
+    skin = (220, 200, 180)
+    outline = "black"
+
+    # =====================
+    # Head (common)
+    # =====================
+    d.ellipse((110, 20, 150, 60), fill=skin, outline=outline)
 
     if gender == "Male":
-        # ===== Male silhouette (current style) =====
-        shoulder = 70
+        # =====================
+        # Male (toilet sign style)
+        # =====================
 
         # Torso
-        d.polygon([
-            (130 - shoulder, 70),
-            (130 + shoulder, 70),
-            (160, 260),
-            (100, 260)
-        ], fill=color_rgb, outline="black")
-
-        # Legs
-        d.rectangle((105, 260, 125, 420), fill=color_rgb)
-        d.rectangle((135, 260, 155, 420), fill=color_rgb)
-
-    else:
-        # ===== Female silhouette (toilet-sign triangle) =====
-
-        # Upper body (small rectangle)
         d.rectangle(
-            (115, 70, 145, 140),
+            (100, 70, 160, 180),
             fill=color_rgb,
-            outline="black"
+            outline=outline
         )
 
+        # Arms
+        d.rectangle((80, 80, 100, 180), fill=color_rgb, outline=outline)
+        d.rectangle((160, 80, 180, 180), fill=color_rgb, outline=outline)
+
+        # Legs
+        d.rectangle((105, 180, 125, 360), fill=color_rgb, outline=outline)
+        d.rectangle((135, 180, 155, 360), fill=color_rgb, outline=outline)
+
+    else:
+        # =====================
+        # Female (toilet sign style)
+        # =====================
+
+        # Upper torso
+        d.rectangle(
+            (110, 70, 150, 150),
+            fill=color_rgb,
+            outline=outline
+        )
+
+        # Arms
+        d.rectangle((90, 80, 110, 160), fill=color_rgb, outline=outline)
+        d.rectangle((150, 80, 170, 160), fill=color_rgb, outline=outline)
+
         # Skirt (triangle)
-        d.polygon([
-            (130, 140),     # top
-            (60, 360),      # left bottom
-            (200, 360)      # right bottom
-        ], fill=color_rgb, outline="black")
+        d.polygon(
+            [
+                (130, 150),   # top
+                (70, 320),    # left bottom
+                (190, 320)    # right bottom
+            ],
+            fill=color_rgb,
+            outline=outline
+        )
+
+        # Legs (short)
+        d.rectangle((115, 320, 130, 400), fill=color_rgb, outline=outline)
+        d.rectangle((130, 320, 145, 400), fill=color_rgb, outline=outline)
 
     return img
+
 
 
 # =====================
