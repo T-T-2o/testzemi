@@ -1,207 +1,126 @@
 import streamlit as st
-import random
 from PIL import Image, ImageDraw
 
-st.set_page_config(page_title="Outfit Recommendation", layout="wide")
-st.title("Content-Based Outfit Recommendation")
+st.set_page_config(layout="wide")
+st.title("Outfit Visual Prototype (No AI Image)")
 
-# -----------------------------
-# 1. Genre & Color Definitions
-# -----------------------------
+# --------------------
+# User Inputs
+# --------------------
 
-GENRES = [
-    "Streetwear",
-    "Casual",
-    "Minimal",
-    "Techwear",
-    "Vintage",
-    "Formal"
-]
+gender = st.selectbox("Gender", ["Male", "Female"])
+body_type = st.selectbox("Body Type", ["Slim", "Average", "Athletic", "Curvy", "Plus-size"])
+pattern = st.selectbox("Pattern", ["Solid", "Striped", "Checked", "Graphic Print", "Minimal Logo"])
+color = st.selectbox("Color", ["Black", "Navy", "Beige", "Green", "Red"])
 
-COLORS = [
-    "Black",
-    "White",
-    "Gray",
-    "Navy",
-    "Brown",
-    "Beige",
-    "Green",
-    "Red"
-]
-
-COLOR_RGB = {
-    "Black": (30, 30, 30),
-    "White": (240, 240, 240),
-    "Gray": (160, 160, 160),
-    "Navy": (40, 60, 100),
-    "Brown": (120, 80, 50),
+COLOR_MAP = {
+    "Black": (40, 40, 40),
+    "Navy": (50, 70, 110),
     "Beige": (210, 200, 170),
-    "Green": (60, 120, 80),
-    "Red": (160, 50, 50)
+    "Green": (70, 120, 90),
+    "Red": (150, 60, 60)
 }
 
-# -----------------------------
-# 2. User Input
-# -----------------------------
+# --------------------
+# Silhouette Parameters
+# --------------------
 
-st.header("1️⃣ Rate Your Style Preference (0–5)")
-
-genre_scores = {}
-for g in GENRES:
-    genre_scores[g] = st.slider(g, 0, 5, 0)
-
-st.header("2️⃣ Rate Your Color Preference (0–5)")
-
-color_scores = {}
-for c in COLORS:
-    color_scores[c] = st.slider(c, 0, 5, 0)
-
-# -----------------------------
-# 3. Content-Based Completion
-# -----------------------------
-
-def complete_scores(scores: dict):
-    avg = sum(scores.values()) / len(scores)
-    return {k: (v if v > 0 else round(avg, 2)) for k, v in scores.items()}
-
-genre_scores = complete_scores(genre_scores)
-color_scores = complete_scores(color_scores)
-
-# -----------------------------
-# 4. Select Top Genres & Colors
-# -----------------------------
-
-top_genres = sorted(genre_scores, key=genre_scores.get, reverse=True)[:3]
-top_colors = sorted(color_scores, key=color_scores.get, reverse=True)[:3]
-
-# -----------------------------
-# 5. Outfit Templates
-# -----------------------------
-
-OUTFIT_LIBRARY = {
-    "Streetwear": {
-        "inner": ["Graphic Tee", "Long Sleeve Tee"],
-        "outer": ["Hoodie", "Zip Hoodie"],
-        "bottom": ["Wide Pants", "Cargo Pants"]
-    },
-    "Casual": {
-        "inner": ["Plain T-Shirt", "Knit"],
-        "outer": ["Cardigan", "Light Jacket"],
-        "bottom": ["Denim", "Chinos"]
-    },
-    "Minimal": {
-        "inner": ["Plain Tee"],
-        "outer": ["Tailored Jacket"],
-        "bottom": ["Slim Slacks"]
-    },
-    "Techwear": {
-        "inner": ["Functional Tee"],
-        "outer": ["Shell Jacket"],
-        "bottom": ["Tech Pants"]
-    },
-    "Vintage": {
-        "inner": ["Retro Tee"],
-        "outer": ["Denim Jacket"],
-        "bottom": ["Straight Jeans"]
-    },
-    "Formal": {
-        "inner": ["Dress Shirt"],
-        "outer": ["Blazer"],
-        "bottom": ["Slacks"]
-    }
+GENDER_PARAMS = {
+    "Male": {"shoulder": 1.2, "hip": 0.9},
+    "Female": {"shoulder": 0.9, "hip": 1.2}
 }
 
-# -----------------------------
-# 6. Outfit Generator
-# -----------------------------
+BODY_PARAMS = {
+    "Slim": 0.85,
+    "Average": 1.0,
+    "Athletic": 1.1,
+    "Curvy": 1.15,
+    "Plus-size": 1.3
+}
 
-def generate_outfit(genre, color):
-    parts = OUTFIT_LIBRARY[genre]
-    return {
-        "Genre": genre,
-        "Color Theme": color,
-        "Inner": f"{color} {random.choice(parts['inner'])}",
-        "Outer": f"{color} {random.choice(parts['outer'])}",
-        "Bottom": f"{color} {random.choice(parts['bottom'])}"
-    }
+# --------------------
+# Pattern Drawing
+# --------------------
 
-# -----------------------------
-# 7. Simple Image Generator
-# -----------------------------
+def draw_pattern(draw, box, pattern, color):
+    x1, y1, x2, y2 = box
 
-def generate_image(outfit):
-    base_color = COLOR_RGB[outfit["Color Theme"]]
+    if pattern == "Solid":
+        draw.rectangle(box, fill=color)
 
-    img = Image.new("RGB", (260, 440), (255, 255, 255))
+    elif pattern == "Striped":
+        for x in range(x1, x2, 10):
+            draw.rectangle((x, y1, x+5, y2), fill=color)
+
+    elif pattern == "Checked":
+        for x in range(x1, x2, 15):
+            for y in range(y1, y2, 15):
+                if (x + y) // 15 % 2 == 0:
+                    draw.rectangle((x, y, x+15, y+15), fill=color)
+
+    elif pattern == "Graphic Print":
+        draw.rectangle(box, fill=color)
+        draw.rectangle((x1+25, y1+30, x2-25, y1+80), fill="white")
+        draw.text((x1+40, y1+40), "GRAPHIC", fill="black")
+
+    elif pattern == "Minimal Logo":
+        draw.rectangle(box, fill=color)
+        draw.ellipse((x1+50, y1+40, x1+65, y1+55), fill="white")
+
+# --------------------
+# Image Generator
+# --------------------
+
+def generate_image():
+    img = Image.new("RGB", (300, 500), "white")
     d = ImageDraw.Draw(img)
 
+    base_width = 80
+    base_hip = 70
+
+    shoulder = base_width * GENDER_PARAMS[gender]["shoulder"] * BODY_PARAMS[body_type]
+    hip = base_hip * GENDER_PARAMS[gender]["hip"] * BODY_PARAMS[body_type]
+
+    center = 150
+
     # Head
-    d.ellipse([100, 20, 160, 80], fill=(220, 200, 180))
+    d.ellipse((125, 20, 175, 70), fill=(220, 200, 180))
 
-    # Outer (Jacket / Hoodie)
-    d.rectangle([60, 100, 200, 260], fill=base_color, outline="black", width=3)
+    # Torso (Top)
+    torso_box = (
+        center - shoulder,
+        80,
+        center + shoulder,
+        220
+    )
 
-    # Hoodie hood
-    if "Hoodie" in outfit["Outer"]:
-        d.arc([80, 80, 180, 140], start=0, end=180, fill="black", width=4)
-
-    # Inner (Tee / Shirt)
-    inner_color = tuple(min(255, c + 40) for c in base_color)
-    d.rectangle([80, 120, 180, 240], fill=inner_color, outline="black", width=2)
-
-    # Graphic Tee logo
-    if "Graphic Tee" in outfit["Inner"]:
-        d.rectangle([110, 160, 150, 200], fill=(255, 255, 255))
+    draw_pattern(d, torso_box, pattern, COLOR_MAP[color])
 
     # Bottom
-    bottom_color = tuple(max(0, c - 40) for c in base_color)
-    d.rectangle([90, 260, 170, 400], fill=bottom_color, outline="black", width=3)
+    bottom_box = (
+        center - hip,
+        220,
+        center + hip,
+        420
+    )
+
+    d.rectangle(bottom_box, fill=COLOR_MAP[color])
 
     return img
 
+# --------------------
+# Output
+# --------------------
 
-# -----------------------------
-# 8. Generate 3 Outfits (Color Duplication Avoidance)
-# -----------------------------
+st.header("Generated Outfit Image")
 
-st.header("👕 Recommended Outfits")
+img = generate_image()
+st.image(img)
 
-used_colors = []
-
-for i, genre in enumerate(top_genres):
-
-    color = random.choice(top_colors)
-
-    # if duplicate color, try to change
-    if color in used_colors and len(top_colors) > 1:
-        color = random.choice([c for c in top_colors if c not in used_colors])
-
-    used_colors.append(color)
-
-    outfit = generate_outfit(genre, color)
-    img = generate_image(outfit)
-
-    col1, col2 = st.columns([1, 1.5])
-
-    with col1:
-        st.image(img, caption=f"Outfit {i+1}")
-
-    with col2:
-        st.subheader(f"Outfit {i+1} Details")
-        st.write(f"**Genre:** {outfit['Genre']}")
-        st.write(f"**Color Theme:** {outfit['Color Theme']}")
-        st.write(f"👕 Inner: {outfit['Inner']}")
-        st.write(f"🧥 Outer: {outfit['Outer']}")
-        st.write(f"👖 Bottom: {outfit['Bottom']}")
-
-# -----------------------------
-# 9. Display Final Scores
-# -----------------------------
-
-st.header("📊 Final Recommendation Scores")
-
-st.subheader("Genre Scores")
-st.json(genre_scores)
-
-st.subheader("Color Scores")
-st.json(color_scores)
+st.subheader("Outfit Attributes")
+st.write({
+    "Gender": gender,
+    "Body Type": body_type,
+    "Pattern": pattern,
+    "Color": color
+})
