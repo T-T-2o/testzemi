@@ -5,6 +5,10 @@ from PIL import Image, ImageDraw
 st.set_page_config(page_title="Outfit Recommendation", layout="wide")
 st.title("Content-Based Outfit Recommendation")
 
+st.header("0️⃣ Select Gender")
+gender = st.radio("Gender", ["Male", "Female"])
+outfit = generate_outfit(genre, color, gender)
+
 # -----------------------------
 # 1. Genre & Color Definitions
 # -----------------------------
@@ -82,48 +86,48 @@ OUTFIT_LIBRARY = {
     "Streetwear": {
         "inner": ["Graphic Tee", "Long Sleeve Tee"],
         "outer": ["Hoodie", "Zip Hoodie"],
-        "bottom": ["Wide Pants", "Cargo Pants"]
+        "bottom": ["Wide Pants", "Cargo Pants"],
+        "skirt": ["Mini Skirt", "Pleated Skirt"]
     },
     "Casual": {
         "inner": ["Plain T-Shirt", "Knit"],
         "outer": ["Cardigan", "Light Jacket"],
-        "bottom": ["Denim", "Chinos"]
+        "bottom": ["Denim", "Chinos"],
+        "skirt": ["Flare Skirt", "Long Skirt"]
     },
     "Minimal": {
         "inner": ["Plain Tee"],
         "outer": ["Tailored Jacket"],
-        "bottom": ["Slim Slacks"]
+        "bottom": ["Slim Slacks"],
+        "skirt": ["Straight Skirt"]
     },
-    "Techwear": {
-        "inner": ["Functional Tee"],
-        "outer": ["Shell Jacket"],
-        "bottom": ["Tech Pants"]
-    },
-    "Vintage": {
-        "inner": ["Retro Tee"],
-        "outer": ["Denim Jacket"],
-        "bottom": ["Straight Jeans"]
-    },
-    "Formal": {
-        "inner": ["Dress Shirt"],
-        "outer": ["Blazer"],
-        "bottom": ["Slacks"]
-    }
+    # 他ジャンルも同様
 }
+
 
 # -----------------------------
 # 6. Outfit Generator
 # -----------------------------
 
-def generate_outfit(genre, color):
+def generate_outfit(genre, color, gender):
     parts = OUTFIT_LIBRARY[genre]
+
+    if gender == "Female" and "skirt" in parts and random.random() < 0.5:
+        bottom_item = random.choice(parts["skirt"])
+        bottom_type = "Skirt"
+    else:
+        bottom_item = random.choice(parts["bottom"])
+        bottom_type = "Pants"
+
     return {
         "Genre": genre,
         "Color Theme": color,
         "Inner": f"{color} {random.choice(parts['inner'])}",
         "Outer": f"{color} {random.choice(parts['outer'])}",
-        "Bottom": f"{color} {random.choice(parts['bottom'])}"
+        "Bottom": f"{color} {bottom_item}",
+        "BottomType": bottom_type
     }
+
 
 # -----------------------------
 # 7. Image Generator (Human Silhouette)
@@ -178,7 +182,13 @@ def generate_image(outfit):
     # Bottom (legs separated)
     d.rectangle([95, 270, 125, 400], fill=bottom_color, outline="black")
     d.rectangle([135, 270, 165, 400], fill=bottom_color, outline="black")
-
+     if outfit["BottomType"] == "Skirt":
+        # Skirt（台形）
+        d.polygon(
+            [(85, 260), (175, 260), (200, 350), (60, 350)],
+            fill=bottom_color,
+            outline="black"
+        )
     # Shoes
     d.rectangle([90, 400, 130, 420], fill=(40, 40, 40))
     d.rectangle([130, 400, 170, 420], fill=(40, 40, 40))
