@@ -414,6 +414,12 @@ def main():
         if sum(color_weights) == 0: 
             color_weights = [1] * len(all_colors)
 
+        # Store debug info for visualization
+        st.session_state["debug_scores"] = {
+            "styles": dict(zip(all_genres, style_weights)),
+            "colors": dict(zip(all_colors, color_weights))
+        }
+
         for _ in range(3):
             # Weighted selection for Genre
             # random.choices returns a list, we take [0]
@@ -447,9 +453,32 @@ def main():
                     - **Bottom**: {items['bottom']}
                     - **Shoes**: {items['shoe']}
                     """)
+        
+        # Display Inferred Scores
+        if "debug_scores" in st.session_state:
+            st.divider()
+            with st.expander("📊 Recommendation Engine Insights (Inferred Scores)", expanded=False):
+                scores = st.session_state["debug_scores"]
+                
+                c1, c2 = st.columns(2)
+                
+                with c1:
+                    st.markdown("#### Genre Weights")
+                    # Normalize for display (0-10 scale approximation)
+                    max_s = max(scores["styles"].values()) if scores["styles"].values() else 1
+                    for k, v in scores["styles"].items():
+                        norm_v = v / max_s
+                        st.progress(norm_v, text=f"{k}: {v:.1f}")
+
+                with c2:
+                    st.markdown("#### Color Weights")
+                    max_c = max(scores["colors"].values()) if scores["colors"].values() else 1
+                    for k, v in scores["colors"].items():
+                        norm_v = v / max_c
+                        st.progress(norm_v, text=f"{k}: {v:.1f}")
+
     else:
         st.info("👈 Select your preferences in the sidebar and click 'Generate Collection' to start.")
 
 if __name__ == "__main__":
     main()
-
