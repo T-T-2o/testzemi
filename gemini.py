@@ -152,6 +152,43 @@ class StyleConfig:
 # ==============================================================================
 # LOGIC CORE
 # ==============================================================================
+class RecommendationEngine:
+    @staticmethod
+    def infer_weights(user_scores, relations, all_keys):
+        """
+        If a user scores an item 0, try to infer a weight based on their positive scores
+        and the relation matrix.
+        NewWeight = Max( OtherScore * Affinity ) for all OtherItems
+        """
+        final_weights = []
+        for key in all_keys:
+            current_score = user_scores.get(key, 0)
+            
+            if current_score > 0:
+                final_weights.append(current_score)
+            else:
+                # Inference Logic
+                inferred_score = 0
+                # Check all other items the user Liked
+                for other_key, other_score in user_scores.items():
+                    if other_score > 0 and other_key != key:
+                        # Get affinity from other -> key or key -> other (undirected mostly)
+                        affinity = relations.get(other_key, {}).get(key, 0)
+                        # Also check reverse if not present (symmetry)
+                        if affinity == 0:
+                            affinity = relations.get(key, {}).get(other_key, 0)
+                            
+                        # Calculate potential score
+                        impact = other_score * affinity
+                        if impact > inferred_score:
+                            inferred_score = impact
+                
+                # Apply a slight penalty to inferred scores so explicit choices usually win
+                # But floor it at 0
+                final_weights.append(max(0, inferred_score * 0.8))
+        
+        return final_weights
+
 class OutfitGenerator:
     @staticmethod
     def get_complementary_color(base_color, color_scores):
@@ -301,7 +338,7 @@ def sidebar_controls():
         
         st.subheader("Style Weights")
         # Weighted Style Input
-        st.caption("Rate your preference for each style (0-10)")
+        st.caption("Rate preferences (0 = Auto-infer from valid scores)")
         style_scores = {}
         
         # Create 2 columns for compact layout
@@ -353,21 +390,36 @@ def main():
         style_scores = config["style_scores"]
         color_scores = config["color_scores"]
         
-        # Prepare style weights
-        genres = list(style_scores.keys())
-        style_weights = list(style_scores.values())
-        if sum(style_weights) == 0: style_weights = [1] * len(genres)
+        # 1. Infer Style Weights
+        all_genres = list(style_scores.keys())
+        style_weights = RecommendationEngine.infer_weights(
+            style_scores, 
+            StyleConfig.GENRE_RELATIONS, 
+            all_genres
+        )
+        
+        # Safety fallback
+        if sum(style_weights) == 0: 
+            style_weights = [1] * len(all_genres)
 
-        # Prepare color weights for MAIN color
-        colors = list(color_scores.keys())
-        color_weights = list(color_scores.values())
-        if sum(color_weights) == 0: color_weights = [1] * len(colors)
+        # 2. Infer Color Weights
+        all_colors = list(color_scores.keys())
+        color_weights = RecommendationEngine.infer_weights(
+            color_scores, 
+            StyleConfig.COLOR_RELATIONS, 
+            all_colors
+        )
+        
+        # Safety fallback
+        if sum(color_weights) == 0: 
+            color_weights = [1] * len(all_colors)
 
         for _ in range(3):
             # Weighted selection for Genre
-            g = random.choices(genres, weights=style_weights, k=1)[0]
+            # random.choices returns a list, we take [0]
+            g = random.choices(all_genres, weights=style_weights, k=1)[0]
             # Weighted selection for Main Color
-            c = random.choices(colors, weights=color_weights, k=1)[0]
+            c = random.choices(all_colors, weights=color_weights, k=1)[0]
             
             outfit = OutfitGenerator.create(g, c, config["gender"], config["use_outer"], color_scores)
             new_outfits.append(outfit)
