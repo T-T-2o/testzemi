@@ -27,9 +27,21 @@ st.markdown("""
     }
     
     /* Sidebar Styling */
+    /* Sidebar Styling */
     section[data-testid="stSidebar"] {
-        background-color: #FFFFFF;
+        background-color: #FFFFFF !important;
         border-right: 1px solid #E0E0E0;
+    }
+
+    /* Fix: Force text colors in sidebar to ensure visibility against white background */
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
+        color: #111111 !important;
     }
     
     /* Headings */
