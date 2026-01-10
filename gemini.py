@@ -290,12 +290,17 @@ def sidebar_controls():
         st.divider()
         
         st.subheader("Style Weights")
-        # Simplify input using multiselect for primary genres instead of individual sliders
-        genres = st.multiselect(
-            "Favorite Styles (Select 1-3)", 
-            StyleConfig.GENRES, 
-            default=["Casual", "Minimal"]
-        )
+        # Weighted Style Input
+        st.caption("Rate your preference for each style (0-10)")
+        style_scores = {}
+        
+        # Create 2 columns for compact layout
+        cols = st.columns(2)
+        for i, genre in enumerate(StyleConfig.GENRES):
+            with cols[i % 2]:
+                # Default values: Casual/Minimal=8, others=4 to give some initial variety
+                default_score = 8 if genre in ["Casual", "Minimal"] else 4
+                style_scores[genre] = st.slider(f"{genre}", 0, 10, default_score, key=f"slider_{genre}")
         
         # Color Palette
         colors = st.multiselect(
@@ -310,7 +315,9 @@ def sidebar_controls():
             return {
                 "gender": gender,
                 "use_outer": use_outer,
-                "genres": genres if genres else StyleConfig.GENRES,
+                "gender": gender,
+                "use_outer": use_outer,
+                "style_scores": style_scores,
                 "colors": colors if colors else StyleConfig.COLORS,
                 "trigger": True
             }
@@ -333,11 +340,20 @@ def main():
     if config["trigger"]:
         new_outfits = []
         # Generate 3 looks
-        possible_genres = config["genres"]
+        style_scores = config["style_scores"]
         possible_colors = config["colors"]
         
+        # Prepare weights for random selection
+        genres = list(style_scores.keys())
+        weights = list(style_scores.values())
+        
+        # Fallback if all weights are 0
+        if sum(weights) == 0:
+            weights = [1] * len(genres)
+
         for _ in range(3):
-            g = random.choice(possible_genres)
+            # Weighted selection
+            g = random.choices(genres, weights=weights, k=1)[0]
             c = random.choice(possible_colors)
             outfit = OutfitGenerator.create(g, c, config["gender"], config["use_outer"], possible_colors)
             new_outfits.append(outfit)
