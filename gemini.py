@@ -453,10 +453,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-st.header("📊 Final Recommendation Scores")
-
-st.subheader("Genre Scores")
-st.json(genre_scores)
-
-st.subheader("Color Scores")
-st.json(color_scores)
