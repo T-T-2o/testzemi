@@ -149,6 +149,27 @@ class StyleConfig:
         }
     }
 
+    # Similarity/Affinity Matrix for Content-Based Recommendation (0.0 - 1.0)
+    GENRE_RELATIONS = {
+        "Streetwear": {"Techwear": 0.9, "Casual": 0.6, "Vintage": 0.4},
+        "Casual": {"Minimal": 0.7, "Vintage": 0.7, "Streetwear": 0.5, "Formal": 0.3},
+        "Minimal": {"Casual": 0.7, "Formal": 0.8, "Techwear": 0.4, "Streetwear": 0.2},
+        "Techwear": {"Streetwear": 0.9, "Minimal": 0.5},
+        "Vintage": {"Casual": 0.7, "Streetwear": 0.4, "Formal": 0.2},
+        "Formal": {"Minimal": 0.8, "Casual": 0.3}
+    }
+
+    COLOR_RELATIONS = {
+        "Black": {"Gray": 0.9, "Navy": 0.8, "White": 0.6},
+        "White": {"Beige": 0.8, "Gray": 0.7, "Black": 0.5},
+        "Gray": {"Black": 0.9, "White": 0.8, "Navy": 0.7},
+        "Navy": {"Black": 0.8, "Gray": 0.7, "Green": 0.4},
+        "Brown": {"Beige": 0.9, "Green": 0.6},
+        "Beige": {"Brown": 0.9, "White": 0.8, "Green": 0.5},
+        "Green": {"Brown": 0.6, "Beige": 0.6, "Navy": 0.4},
+        "Red": {"Brown": 0.3, "Black": 0.2}
+    }
+
 # ==============================================================================
 # LOGIC CORE
 # ==============================================================================
