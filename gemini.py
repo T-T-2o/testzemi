@@ -43,6 +43,18 @@ st.markdown("""
     section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
         color: #111111 !important;
     }
+
+    /* Fix: Ensure Button Text is White (overriding the generic sidebar rule above) */
+    section[data-testid="stSidebar"] button span,
+    section[data-testid="stSidebar"] button p {
+        color: #FFFFFF !important;
+    }
+
+    /* Fix: Ensure Selectbox Background is White so black text is visible */
+    section[data-testid="stSidebar"] div[data-baseweb="select"] > div,
+    section[data-testid="stSidebar"] div[data-baseweb="popover"] {
+        background-color: #FFFFFF !important;
+    }
     
     /* Headings */
     h1, h2, h3 {
